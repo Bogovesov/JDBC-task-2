@@ -22,7 +22,12 @@ public class Application {
         final File file = new File(directory);
         if (file.isDirectory()) {
             Map<String, List<String>> tables = DirectoryParser.instance().read(directory);
-//            SqlParser.instance().buildSqlCreateTable(tables.);
+            for (Map.Entry<String, List<String>> entry : tables.entrySet()) {
+                String sqlCreateTable = SqlParser.instance().getSqlCreateTable(entry.getKey(), entry.getValue());
+                SqlManager.instance().execute(sqlCreateTable);
+                String sqlInsertData = SqlParser.instance().getSqlInsert(entry.getKey(), entry.getValue());
+                SqlManager.instance().execute(sqlInsertData);
+            }
         } else {
             throw new UnexpectedDirectoryFormat();
         }
