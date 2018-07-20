@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 public class CsvReader {
-    private final String cvsSplitBy = ",";
 
     public List<String> readFile(String fileName) {
         List<String> lines = new ArrayList<>();

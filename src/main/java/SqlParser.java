@@ -1,17 +1,18 @@
 import java.util.List;
 
 public class SqlParser {
-
+    private final String SEPARATOR = ",";
 
     private SqlParser() {
 
     }
+
     public static SqlParser instance() {
         return Singleton.INSTANCE.sqlParser;
     }
 
 
-    public String parse(List<String> lines){
+    public String buildSqlCreateTable(String tableName, List<String> lines) {
 
         return "";
     }

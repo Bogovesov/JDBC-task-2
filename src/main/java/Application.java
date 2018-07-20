@@ -22,6 +22,7 @@ public class Application {
         final File file = new File(directory);
         if (file.isDirectory()) {
             Map<String, List<String>> tables = DirectoryParser.instance().read(directory);
+//            SqlParser.instance().buildSqlCreateTable(tables.);
         } else {
             throw new UnexpectedDirectoryFormat();
         }
