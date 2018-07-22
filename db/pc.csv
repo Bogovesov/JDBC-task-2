@@ -1,0 +1,3 @@
+pc_id(int),pc_name(varchar),st_id(int)
+1,"Pc 1",2
+2,"Pc 2" ,1

@@ -21,13 +21,20 @@ public class Application {
         final String directory = args[0];
         final File file = new File(directory);
         if (file.isDirectory()) {
-            Map<String, List<String>> tables = DirectoryParser.instance().read(directory);
+            Map<String, List<String>> tables = DirectoryParser.instance().readCsvFile(directory);
             for (Map.Entry<String, List<String>> entry : tables.entrySet()) {
-                String sqlCreateTable = SqlParser.instance().getSqlCreateTable(entry.getKey(), entry.getValue());
+                String tableName = SqlParser.instance().parseTableName(entry.getKey());
+
+                String sqlCreateTable = SqlParser.instance().getSqlCreateTable(tableName, entry.getValue());
                 SqlManager.instance().execute(sqlCreateTable);
-                String sqlInsertData = SqlParser.instance().getSqlInsert(entry.getKey(), entry.getValue());
-                SqlManager.instance().execute(sqlInsertData);
+
+                if (SqlManager.instance().verifyTableIsEmpty(tableName)) {
+                    String sqlInsertData = SqlParser.instance().getSqlInsert(tableName, entry.getValue());
+                    SqlManager.instance().execute(sqlInsertData);
+                }
             }
+
+            List<String> fileIndex = DirectoryParser.instance().readIndex(directory);
         } else {
             throw new UnexpectedDirectoryFormat();
         }

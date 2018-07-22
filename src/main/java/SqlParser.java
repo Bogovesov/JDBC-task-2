@@ -1,6 +1,5 @@
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class SqlParser {
     public static final char QUOTES_START_TYPE = '(';
@@ -20,11 +19,11 @@ public class SqlParser {
 
 
     public String getSqlCreateTable(String tableName, List<String> lines) {
-        return makeSqlCreateTable(parseTableName(tableName), buildColumns(lines.get(INDEX_HEAD).split(SEPARATOR)));
+        return makeSqlCreateTable(parseTableName(tableName), makeListColumns(lines.get(INDEX_HEAD).split(SEPARATOR)));
     }
 
     public String getSqlInsert(String tableName, List<String> lines) {
-        String column = buildColumnsList(lines.get(INDEX_HEAD).split(SEPARATOR));
+        String column = buildColumnsListWithoutType(lines.get(INDEX_HEAD).split(SEPARATOR));
         String sql = "INSERT INTO " + parseTableName(tableName) + "(" + column + ")" + " VALUES";
         for (int i = 0; i < lines.size(); i++) {
             if (i != INDEX_HEAD) {
@@ -38,7 +37,7 @@ public class SqlParser {
         return sql;
     }
 
-    private String buildColumnsList(String[] columns) {
+    private String buildColumnsListWithoutType(String[] columns) {
         String result = "";
         for (int j = 0; j < columns.length; j++) {
             if ((columns[j].indexOf(QUOTES_START_TYPE) >= 0) && (columns[j].indexOf(QUOTES_ENT_TYPE) >= 0)) {
@@ -59,8 +58,8 @@ public class SqlParser {
         return result.substring(0, result.length() - 1);
     }
 
-    private Map<String, String> buildColumns(String[] columns) {
-        Map<String, String> mapColumn = new HashMap<>();
+    private List<TableColumn> makeListColumns(String[] columns) {
+        List<TableColumn> tableColumns = new ArrayList<>();
         for (int j = 0; j < columns.length; j++) {
             if ((columns[j].indexOf(QUOTES_START_TYPE) >= 0) && (columns[j].indexOf(QUOTES_ENT_TYPE) >= 0)) {
                 String columnName = "", columnType = "";
@@ -77,30 +76,32 @@ public class SqlParser {
                         columnType += letter;
                     }
                 }
-                mapColumn.put(columnName, columnType);
+                tableColumns.add(new TableColumn(columnName,columnType));
             }
         }
-        return mapColumn;
+        return tableColumns;
     }
 
-    private String makeSqlCreateTable(String tableName, Map<String, String> columns) {
+    private String makeSqlCreateTable(String tableName, List<TableColumn> tableColumns) {
         String sql = "CREATE TABLE IF NOT EXISTS " + tableName + "(";
         String primarykey = "";
-        for (Map.Entry<String, String> entry : columns.entrySet()) {
+        for (int i = 0; i < tableColumns.size(); i++) {
+            String columnType = tableColumns.get(i).getType();
+            String colunName = tableColumns.get(i).getName();
+
             if (primarykey.isEmpty()) {
-                primarykey = entry.getKey();
+                primarykey = colunName;
             }
-            String typeColumn = entry.getValue();
-            if (VARCHAR.equals(typeColumn)) {
-                typeColumn = entry.getValue() + "(255)";
+            if (VARCHAR.equals(columnType)) {
+                columnType = tableColumns.get(i).getType() + "(255)";
             }
-            sql += entry.getKey() + " " + typeColumn + " NOT NULL,";
+            sql += colunName + " " + columnType + " NOT NULL,";
         }
         sql += "PRIMARY KEY (" + primarykey + ") )";
         return sql;
     }
 
-    private String parseTableName(String tableName) {
+    public String parseTableName(String tableName) {
         if (tableName.contains(CSV_EXT)) {
             tableName = tableName.replace(".csv", "");
         }

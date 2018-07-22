@@ -1,0 +1,3 @@
+student(st_id) manyToMany subject(s_id)
+student ManyToOne pc(st_id)
+student(o_id) OneToOne  order(s_id)

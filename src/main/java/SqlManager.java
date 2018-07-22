@@ -2,9 +2,9 @@ import java.sql.*;
 
 public class SqlManager {
 
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/test_db";
+    private static final String DB_URL = "jdbc:mysql://localhost:3307/test_db";
     private static final String USER_NAME = "root";
-    private static final String PASSWORD = "2010";
+    private static final String PASSWORD = "root";
 
 
     private SqlManager() {
@@ -35,6 +35,21 @@ public class SqlManager {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public boolean verifyTableIsEmpty(String tableName) {
+        int countRow = 0;
+        try (Connection dbConnection = getConnection();
+             PreparedStatement statement = dbConnection.prepareStatement("SELECT COUNT(*) FROM " + tableName)) {
+           ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                countRow = resultSet.getInt(1);;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return countRow == 0;
     }
 
     private enum Singleton {
