@@ -1,4 +1,6 @@
 import exceptions.UnexpectedDirectoryFormat;
+import utils.SqlManager;
+import utils.foreign_key.FactoryFK;
 
 import java.io.File;
 import java.util.List;
@@ -23,18 +25,18 @@ public class Application {
         if (file.isDirectory()) {
             Map<String, List<String>> tables = DirectoryParser.instance().readCsvFile(directory);
             for (Map.Entry<String, List<String>> entry : tables.entrySet()) {
-                String tableName = SqlParser.instance().parseTableName(entry.getKey());
+                final String tableName = SqlParser.instance().parseTableName(entry.getKey());
 
-                String sqlCreateTable = SqlParser.instance().getSqlCreateTable(tableName, entry.getValue());
+                final String sqlCreateTable = SqlParser.instance().getSqlCreateTable(tableName, entry.getValue());
                 SqlManager.instance().execute(sqlCreateTable);
 
                 if (SqlManager.instance().verifyTableIsEmpty(tableName)) {
-                    String sqlInsertData = SqlParser.instance().getSqlInsert(tableName, entry.getValue());
+                    final String sqlInsertData = SqlParser.instance().getSqlInsert(tableName, entry.getValue());
                     SqlManager.instance().execute(sqlInsertData);
                 }
             }
-
-            List<String> fileIndex = DirectoryParser.instance().readIndex(directory);
+            final List<String> fileIndex = DirectoryParser.instance().readIndexFile(directory);
+            FactoryFK.instance().buildForeignKey(fileIndex);
         } else {
             throw new UnexpectedDirectoryFormat();
         }

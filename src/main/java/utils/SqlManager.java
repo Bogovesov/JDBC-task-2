@@ -1,10 +1,12 @@
+package utils;
+
 import java.sql.*;
 
 public class SqlManager {
 
-    private static final String DB_URL = "jdbc:mysql://localhost:3307/test_db";
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/test_db";
     private static final String USER_NAME = "root";
-    private static final String PASSWORD = "root";
+    private static final String PASSWORD = "2010";
 
 
     private SqlManager() {
@@ -29,11 +31,13 @@ public class SqlManager {
     }
 
     public void execute(String sql) {
-        try (Connection dbConnection = getConnection();
-             PreparedStatement statement = dbConnection.prepareStatement(sql)) {
-            statement.execute();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        if (!sql.isEmpty()) {
+            try (Connection dbConnection = getConnection();
+                 PreparedStatement statement = dbConnection.prepareStatement(sql)) {
+                statement.execute();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -41,9 +45,10 @@ public class SqlManager {
         int countRow = 0;
         try (Connection dbConnection = getConnection();
              PreparedStatement statement = dbConnection.prepareStatement("SELECT COUNT(*) FROM " + tableName)) {
-           ResultSet resultSet = statement.executeQuery();
+            ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                countRow = resultSet.getInt(1);;
+                countRow = resultSet.getInt(1);
+                ;
             }
         } catch (SQLException e) {
             e.printStackTrace();

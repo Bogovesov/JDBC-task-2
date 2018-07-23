@@ -1,12 +1,15 @@
+import utils.Splitter;
+import utils.TableColumn;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class SqlParser {
-    public static final char QUOTES_START_TYPE = '(';
-    public static final char QUOTES_ENT_TYPE = ')';
-    public static final int INDEX_HEAD = 0;
-    public static final String CSV_EXT = ".csv";
-    public static final String VARCHAR = "varchar";
+    private final char QUOTES_START_TYPE = '(';
+    private final char QUOTES_ENT_TYPE = ')';
+    private final int INDEX_HEAD = 0;
+    private final String CSV_EXT = ".csv";
+    private final String VARCHAR = "varchar";
     private final String SEPARATOR = ",";
 
     private SqlParser() {
@@ -23,37 +26,27 @@ public class SqlParser {
     }
 
     public String getSqlInsert(String tableName, List<String> lines) {
-        String column = buildColumnsListWithoutType(lines.get(INDEX_HEAD).split(SEPARATOR));
-        String sql = "INSERT INTO " + parseTableName(tableName) + "(" + column + ")" + " VALUES";
-        for (int i = 0; i < lines.size(); i++) {
-            if (i != INDEX_HEAD) {
-                sql += "(" + lines.get(i) + ")";
-                if (i != lines.size() - 1) {
-                    sql += ',';
+        String sql = "";
+        if (lines.size() > 1) {
+            String column = buildColumnsListWithoutType(lines.get(INDEX_HEAD).split(SEPARATOR));
+            sql = "INSERT INTO " + parseTableName(tableName) + "(" + column + ")" + " VALUES";
+            for (int i = 0; i < lines.size(); i++) {
+                if (i != INDEX_HEAD) {
+                    sql += "(" + lines.get(i) + ")";
+                    if (i != lines.size() - 1) {
+                        sql += ',';
+                    }
                 }
             }
+            sql += ";";
         }
-        sql += ";";
         return sql;
     }
 
     private String buildColumnsListWithoutType(String[] columns) {
         String result = "";
         for (int j = 0; j < columns.length; j++) {
-            if ((columns[j].indexOf(QUOTES_START_TYPE) >= 0) && (columns[j].indexOf(QUOTES_ENT_TYPE) >= 0)) {
-                String columnName = "";
-                Boolean isType = false;
-                for (int k = 0; k < columns[j].length() - 1; k++) {
-                    char letter = columns[j].charAt(k);
-                    if (letter == QUOTES_START_TYPE) {
-                        isType = true;
-                    }
-                    if (!isType) {
-                        columnName += letter;
-                    }
-                }
-                result += columnName + ',';
-            }
+            result += Splitter.instance().parseTableColumn(columns[j]).getName() + ',';
         }
         return result.substring(0, result.length() - 1);
     }
@@ -61,23 +54,7 @@ public class SqlParser {
     private List<TableColumn> makeListColumns(String[] columns) {
         List<TableColumn> tableColumns = new ArrayList<>();
         for (int j = 0; j < columns.length; j++) {
-            if ((columns[j].indexOf(QUOTES_START_TYPE) >= 0) && (columns[j].indexOf(QUOTES_ENT_TYPE) >= 0)) {
-                String columnName = "", columnType = "";
-                Boolean isType = false;
-                for (int k = 0; k < columns[j].length() - 1; k++) {
-                    char letter = columns[j].charAt(k);
-
-                    if (letter == QUOTES_START_TYPE) {
-                        isType = true;
-                    }
-                    if (!isType) {
-                        columnName += letter;
-                    } else if ((!(letter == QUOTES_START_TYPE)) && !(letter == QUOTES_ENT_TYPE)) {
-                        columnType += letter;
-                    }
-                }
-                tableColumns.add(new TableColumn(columnName,columnType));
-            }
+            tableColumns.add(Splitter.instance().parseTableColumn(columns[j]));
         }
         return tableColumns;
     }

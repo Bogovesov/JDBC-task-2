@@ -30,7 +30,7 @@ public class DirectoryParser {
         return folder.listFiles();
     }
 
-    public List<String> readIndex(String directoryName) {
+    public List<String> readIndexFile(String directoryName) {
         File[] listOfFiles = getFiles(directoryName);
         List<String> strings = new ArrayList<>();
         MyFileReader myFileReader = new MyFileReader();
